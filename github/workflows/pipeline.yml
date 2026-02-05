@@ -1,8 +1,0 @@
-name : My First Pipeline
-on: [push]
-jobs :
-say−hello:
-runs−on : ubuntu−latest
-s t eps :
-− name : Print welcome message
-run : echo "Pipeline  triggered by a commit ! "
