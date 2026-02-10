@@ -1,1 +1,99 @@
-**********F
+**********UNRESTRICTED FILE UPLOAD*************
+1.Introduction:
+This report analyses a python file upload function that saves the user-supplied files without
+adequate validation.The absence of file type,content and size checks exposes the system to serious
+security risks, including remote code execution and malware upload.
+
+
+2.Description of the Vulnerability:
+The application allows users to upload files using a file name provided directly by the user.
+The file is saved to the server without verifying its type, extension, MIME type or content.
+This is unrestricted file upload vulnerability.
+
+3. Questions & Answers:
+3.1. What dangerous files could be uploaded?
+-.php,.py,.jsp -----Remote code execution
+-.exe,.bat,.sh -----Malware/System Compromise
+-.htm,.js ----------Stored XXS attack
+-.zip --------------Malware delivery or zip bombs
+-.config,.env ------Configuration overwrite
+-.jpg,.php ---------Double extension bypass
+
+3.2. Why isn't secure_filename() enough?
+-secure_filename() only sanitizes the filename, it does NOT:
+  1.Validate the file content
+  2.Verify MIME type
+  3.Restrict file extension
+  4.Prevent malicious payload
+  5.Stop executable files
+  6.Enforce file size limit
+
+4.Root Cause Analysis:
+The vulnerability exist due to:
+-Trusting user input
+-Missing server-side validation
+-No allowlist of file types
+-No content inspection
+-No storage isolation
+
+5.Impact Assessment:
+Remote code execution ------ Critical
+Malware Hosting ------------High
+Stored XXS -----------------High
+Data breach ----------------High
+System Compromise ----------Critical
+
+6.Recommendation & Mitigation Strategy:
+A secure file upload must include:
+ 1.Filename sanitization
+ 2.Extension Allowlisting
+ 3.MIME type Validation
+ 4.File size limit
+ 5.Content Validation
+ 6.Non-executable upload directory
+ 7.Randomized filename
+
+7.Secure Implementation:
+
+from werkzeug.utils import secure_filename
+import os
+import uuid
+import mimetypes
+
+#Allowed exetensions and MIME types
+ALLOWED_EXTENSIONS = {"png","jpg","jpeg","gif","pdf"}
+ALLOWED_MIME_TYPES = {"image/png","image/jpeg","image/gif","application/pdf"}
+
+
+UPLOAD_DIR = "uploads"
+MAX_FILES_SIZE = 5*1024*1024 #5MB
+
+def allowed_filename(filename):
+#check if the file extension name is in the allow list
+		return("."in filename and filename.rsplit(".",1)[1].lower() in ALLOWED_EXTENSIONS)
+
+def upload_file(file):
+#Sanitize the filename
+	filename = secure_filename(file.filename)
+	if not filename:
+              raise ValueError("Invalid filename")
+	if not allowed_file(filename):
+	      raise ValueError("File type not allowed")
+
+#Guess MIME type based on filename
+	mime_type, _ =mimetypes.guess_type(filename)
+	if mime_type not in ALLOWED_MIME_TYPES:
+	      raise ValueError("Invalid MIME type")
+#Ensure upload directory exists
+	os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+#Generate a random file to prevent overwriting the and enumeration
+	extension =filename.rsplit(".",1)[1]
+	safe_name = f"{uuid.uuid4().hex}.{extension}"
+	save_path = os.path.join(UPLOAD_DIR, safe_name)
+
+#save file to disk
+	file.save(save_path)
+
+	return f"File uploaded securely as {safe_name}"
