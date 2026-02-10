@@ -1,7 +1,7 @@
 from werkzeug.utils import secure_filename#utility to sanitize file names
 import os#provides operating system interfaces
 
-def upload_file():
+def upload_file(file):
     #Extract the file name provided by the user
     #VULNERABILITY: User controlled input
     filename = file.filename
@@ -22,7 +22,7 @@ def upload_file():
 #=======Simulated usage===========
 
 class MockFile:
-    def _init_(self,name):
+    def __init__(self,name):
         #File name comes directly from the user
         self.filename =name
 
@@ -32,7 +32,7 @@ class MockFile:
 
 
 #User provides filename manually
-user_filename = MockFile(input("Enter filename: "))
+user_file = MockFile(input("Enter filename: "))
 #upload function is called with untrusted input
 print(upload_file(user_file))
 
