@@ -1,0 +1,50 @@
+*********************INSECURE TOKEN GENERATION USING PREDICTABLE RANDOMNESS******************
+1.Introduction:
+This report is analyses a python based token generator that produces a six digits numeric token using
+the random module seeded with system time. The purpose is to determine whether the generated token is suitable for
+security sensitive use cases such as authentication tokens, OTPs or password reset.
+
+2.Description of the Vulnerability
+The application uses the random module seeded with time.time() to generate a token. Python's random module is
+deterministic and was designed for cryptographic use. Seeding it with the predictable value such as the current
+system time significantly weakens the randomness of the generated token.
+
+3.Root cause Analysis:
+ 3.1. Use of Non-Cryptographic Random Generator
+      The random module uses the Mersenne Twister Algorithm, this predicatable and deterministic once seed is known.
+
+ 3.2. Predictable Seed Source:
+      time.time() returns the current system time. An attacker can easily brute-force the seed.
+
+ 3.3. Limited Token Space:
+      The token range(100000-999999) provides only 900,000 possible values,this makes Brute-force attacks feasible
+      especially without rate limiting.
+
+4.Attack Scenario
+-Observe or estimate the time the token was generated
+-Recreate the random  number generator using using timestamps around that time.
+-Generate possible tokens using those seeds
+-Predict the current or future tokens once the correct seed is found
+This makes the system vulnerable to: 
+1. Token Prediction
+2.OTP bypass
+3.Unauthorised account access
+
+5.Impact Assessment
+-Account take over ----> High
+-Authentication  bypass ----->High
+-Data Compromise ------>Medium - High
+-Trust in system security ----->severely impacted
+
+6.Recommendation
+Replace the insecure randomness with a Cryptographically secure random generator.
+
+7. Secure Implementation
+
+#Cryptographically secure randomness module
+import secrets
+
+def token_generator():
+	#Generates a secure 6-digits token using OS-level entropy
+	return(secrets.randbelow(900000)+ 100000)
+print(f"Your token: {token_generator()}")
