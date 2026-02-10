@@ -12,7 +12,7 @@ def generate_token():
 
     #generate a 6 digits number between 100000 and 999999
     #VULNERABILITY: output space is very small and can be brute forced
-    return str(random.randint(100000,999999)
+    return str(random.randint(100000,999999))
 
 #calls the function and prints the generated token
 #VULNERABILITY:Token generation relies on insecure randomness
